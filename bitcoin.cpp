@@ -36,16 +36,16 @@ class CNode {
     nHeaderStart = vSend.size();
     vSend << CMessageHeader(pszCommand, 0);
     nMessageStart = vSend.size();
-//    printf("%s: SEND %s\n", ToString(you).c_str(), pszCommand); 
+//    printf("%s: SEND %s\n", ToString(you).c_str(), pszCommand);
   }
-  
+
   void AbortMessage() {
     if (nHeaderStart == -1) return;
     vSend.resize(nHeaderStart);
     nHeaderStart = -1;
     nMessageStart = -1;
   }
-  
+
   void EndMessage() {
     if (nHeaderStart == -1) return;
     unsigned int nSize = vSend.size() - nMessageStart;
@@ -60,7 +60,7 @@ class CNode {
     nHeaderStart = -1;
     nMessageStart = -1;
   }
-  
+
   void Send() {
     if (sock == INVALID_SOCKET) return;
     if (vSend.empty()) return;
@@ -72,7 +72,7 @@ class CNode {
       sock = INVALID_SOCKET;
     }
   }
-  
+
   void PushVersion() {
     int64 nTime = time(NULL);
     uint64 nLocalNonce = BITCOIN_SEED_NONCE;
@@ -80,11 +80,11 @@ class CNode {
     CAddress me(CService("0.0.0.0"));
     BeginMessage("version");
     int nBestHeight = GetRequireHeight();
-    string ver = "/bitcoin-seeder:0.01/";
+    string ver = "/swiftcash-seeder:0.01/";
     vSend << PROTOCOL_VERSION << nLocalServices << nTime << you << me << nLocalNonce << ver << nBestHeight;
     EndMessage();
   }
- 
+
   void GotVersion() {
     // printf("\n%s: version %i\n", ToString(you).c_str(), nVersion);
     if (vAddr) {
@@ -111,7 +111,7 @@ class CNode {
         vRecv >> strSubVer;
       if (nVersion >= 209 && !vRecv.empty())
         vRecv >> nStartingHeight;
-      
+
       if (nVersion >= 209) {
         BeginMessage("verack");
         EndMessage();
@@ -123,13 +123,13 @@ class CNode {
       }
       return false;
     }
-    
+
     if (strCommand == "verack") {
       this->vRecv.SetVersion(min(nVersion, PROTOCOL_VERSION));
       GotVersion();
       return false;
     }
-    
+
     if (strCommand == "addr" && vAddr) {
       vector<CAddress> vAddrNew;
       vRecv >> vAddrNew;
@@ -171,16 +171,16 @@ class CNode {
       vector<char> vHeaderSave(vRecv.begin(), vRecv.begin() + nHeaderSize);
       CMessageHeader hdr;
       vRecv >> hdr;
-      if (!hdr.IsValid()) { 
+      if (!hdr.IsValid()) {
         // printf("%s: BAD (invalid header)\n", ToString(you).c_str());
         ban = 100000; return true;
       }
       string strCommand = hdr.GetCommand();
       unsigned int nMessageSize = hdr.nMessageSize;
-      if (nMessageSize > MAX_SIZE) { 
+      if (nMessageSize > MAX_SIZE) {
         // printf("%s: BAD (message too large)\n", ToString(you).c_str());
         ban = 100000;
-        return true; 
+        return true;
       }
       if (nMessageSize > vRecv.size()) {
         vRecv.insert(vRecv.begin(), vHeaderSave.begin(), vHeaderSave.end());
@@ -200,7 +200,7 @@ class CNode {
     } while(1);
     return false;
   }
-  
+
 public:
   CNode(const CService& ip, vector<CAddress>* vAddrIn) : you(ip), nHeaderStart(-1), nMessageStart(-1), vAddr(vAddrIn), ban(0), doneAfter(0), nVersion(0) {
     vSend.SetType(SER_NETWORK);
@@ -258,19 +258,19 @@ public:
     sock = INVALID_SOCKET;
     return (ban == 0) && res;
   }
-  
+
   int GetBan() {
     return ban;
   }
-  
+
   int GetClientVersion() {
     return nVersion;
   }
-  
+
   std::string GetClientSubVersion() {
     return strSubVer;
   }
-  
+
   int GetStartingHeight() {
     return nStartingHeight;
   }
@@ -298,7 +298,7 @@ bool TestNode(const CService &cip, int &ban, int &clientV, std::string &clientSV
 
 /*
 int main(void) {
-  CService ip("bitcoin.sipa.be", 8333, true);
+  CService ip("swiftcash.cc", 8544, true);
   vector<CAddress> vAddr;
   vAddr.clear();
   int ban = 0;
